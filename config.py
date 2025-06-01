@@ -1,4 +1,5 @@
 import torch
+import os
 
 # Global settings
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
