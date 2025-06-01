@@ -63,11 +63,11 @@ def train(model, train_loader, test_loader, optimizer, loss_fn, epochs):
     # 3. Loop through training and testing steps for a number of epochs
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = train_step(model=model,
-                                           dataloader=train_dataloader,
+                                           dataloader=train_loader,
                                            loss_fn=loss_fn,
                                            optimizer=optimizer)
         test_loss, test_acc = test_step(model=model,
-            dataloader=test_dataloader,
+            dataloader=test_loader,
             loss_fn=loss_fn)
 
         # 4. Print out what's happening
