@@ -103,6 +103,8 @@ if __name__ == "__main__":
     
     print("Creating Dataloader...")
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+    print(f"Train loader length: {len(train_loader)}")  # Total number of batches in train_loader
+
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
     print("Creating Model...")
