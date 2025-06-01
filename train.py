@@ -13,11 +13,9 @@ def train_step(model, dataloader, loss_fn, optimizer):
     model.train()
     train_loss, train_acc = 0, 0
     for batch, (X,y) in enumerate(dataloader):
-        print(f"Running Batch: {batch}")
+        print(f"\nRunning Batch: {batch+1}")
         X, y = X.to(device), y.to(device)
-        print("Now will make prediction...")
         y_pred = model(X)
-        print("Calculating loss...")
         loss = loss_fn(y_pred,y)
         train_loss += loss.item()
         print(f"Loss value: {train_loss}")
@@ -26,10 +24,12 @@ def train_step(model, dataloader, loss_fn, optimizer):
         optimizer.step()
         y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
         train_acc += (y_pred_class == y).sum().item()/len(y_pred)
-
+    print("\nAll batches done!")
     # Adjust metrics to get average loss and accuracy per batch
     train_loss = train_loss / len(dataloader)
+    print(f"Train loss: {train_loss}")
     train_acc = train_acc / len(dataloader)
+    print(f"Training accuracy: {train_acc}")
     return train_loss, train_acc
 
 def test_step(model, dataloader, loss_fn):
@@ -43,6 +43,8 @@ def test_step(model, dataloader, loss_fn):
     with torch.inference_mode():
         # Loop through DataLoader batches
         for batch, (X, y) in enumerate(dataloader):
+            print(f"Testing batch: {batch+1}")
+
             # Send data to target device
             X, y = X.to(device), y.to(device)
 
@@ -71,6 +73,7 @@ def train(model, train_loader, test_loader, optimizer, loss_fn, epochs):
                                            dataloader=train_loader,
                                            loss_fn=loss_fn,
                                            optimizer=optimizer)
+        print(f"\nEpoch {epoch} training done!")
         test_loss, test_acc = test_step(model=model,
             dataloader=test_loader,
             loss_fn=loss_fn)
@@ -103,7 +106,6 @@ if __name__ == "__main__":
     
     print("Creating Dataloader...")
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
-    print(f"Train loader length: {len(train_loader)}")  # Total number of batches in train_loader
 
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
