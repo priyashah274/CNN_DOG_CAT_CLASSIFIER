@@ -6,8 +6,9 @@ from utils.transforms import train_transform, test_transform
 from utils.data_setup import extract_and_prepare_data
 from model.cnn import CNNClassifier
 from config import *
-from tqdm.auto import tqdm
+from tqdm.notebook import tqdm
 from config import DEVICE as device
+from utils.plot_utils import plot_loss_curves
 
 def train_step(model, dataloader, loss_fn, optimizer):
     model.train()
@@ -113,7 +114,6 @@ if __name__ == "__main__":
     end = timer()
     print(f"Training time: {end-start:.2f} sec")
 
-    from utils.plot_utils import plot_loss_curves
     plot_loss_curves(results)
 
     torch.save(model.state_dict(), "cnn_model.pth")
