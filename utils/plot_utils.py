@@ -27,3 +27,4 @@ def plot_loss_curves(results):
 
     plt.tight_layout()
     plt.show()  # ← THIS LINE is essential in Colab
+    print(plt.show())
