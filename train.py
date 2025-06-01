@@ -11,34 +11,81 @@ from tqdm.auto import tqdm
 def train_step(model, dataloader, loss_fn, optimizer):
     model.train()
     train_loss, train_acc = 0, 0
-    for X, y in dataloader:
-        X, y = X.to(DEVICE), y.to(DEVICE)
+    for batch, (X,y) in enumerate(dataloader):
+        X, y = X.to(device), y.to(device)
         y_pred = model(X)
-        loss = loss_fn(y_pred, y)
+        loss = loss_fn(y_pred,y)
         train_loss += loss.item()
-        optimizer.zero_grad(); loss.backward(); optimizer.step()
-        train_acc += (y_pred.argmax(1) == y).sum().item() / len(y_pred)
-    return train_loss/len(dataloader), train_acc/len(dataloader)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
+        train_acc += (y_pred_class == y).sum().item()/len(y_pred)
+
+    # Adjust metrics to get average loss and accuracy per batch
+    train_loss = train_loss / len(dataloader)
+    train_acc = train_acc / len(dataloader)
+    return train_loss, train_acc
 
 def test_step(model, dataloader, loss_fn):
+    # Put model in eval mode
     model.eval()
+
+    # Setup test loss and test accuracy values
     test_loss, test_acc = 0, 0
+
+    # Turn on inference context manager
     with torch.inference_mode():
-        for X, y in dataloader:
-            X, y = X.to(DEVICE), y.to(DEVICE)
-            y_pred = model(X)
-            test_loss += loss_fn(y_pred, y).item()
-            test_acc += (y_pred.argmax(1) == y).sum().item() / len(y_pred)
-    return test_loss/len(dataloader), test_acc/len(dataloader)
+        # Loop through DataLoader batches
+        for batch, (X, y) in enumerate(dataloader):
+            # Send data to target device
+            X, y = X.to(device), y.to(device)
+
+            # 1. Forward pass
+            test_pred_logits = model(X)
+
+            # 2. Calculate and accumulate loss
+            loss = loss_fn(test_pred_logits, y)
+            test_loss += loss.item()
+
+            # Calculate and accumulate accuracy
+            test_pred_labels = test_pred_logits.argmax(dim=1)
+            test_acc += ((test_pred_labels == y).sum().item()/len(test_pred_labels))
+
+    # Adjust metrics to get average loss and accuracy per batch
+    test_loss = test_loss / len(dataloader)
+    test_acc = test_acc / len(dataloader)
+    return test_loss, test_acc
 
 def train(model, train_loader, test_loader, optimizer, loss_fn, epochs):
-    results = {"train_loss": [], "train_acc": [], "test_loss": [], "test_acc": []}
+    results = {"train_loss": [],"train_acc": [],"test_loss": [],"test_acc": []}
+
+    # 3. Loop through training and testing steps for a number of epochs
     for epoch in tqdm(range(epochs)):
-        train_loss, train_acc = train_step(model, train_loader, loss_fn, optimizer)
-        test_loss, test_acc = test_step(model, test_loader, loss_fn)
-        print(f"Epoch {epoch+1}: TLoss={train_loss:.4f}, TAcc={train_acc:.4f}, ValLoss={test_loss:.4f}, ValAcc={test_acc:.4f}")
-        results["train_loss"].append(train_loss); results["train_acc"].append(train_acc)
-        results["test_loss"].append(test_loss); results["test_acc"].append(test_acc)
+        train_loss, train_acc = train_step(model=model,
+                                           dataloader=train_dataloader,
+                                           loss_fn=loss_fn,
+                                           optimizer=optimizer)
+        test_loss, test_acc = test_step(model=model,
+            dataloader=test_dataloader,
+            loss_fn=loss_fn)
+
+        # 4. Print out what's happening
+        print(
+            f"Epoch: {epoch+1} | "
+            f"train_loss: {train_loss:.4f} | "
+            f"train_acc: {train_acc:.4f} | "
+            f"test_loss: {test_loss:.4f} | "
+            f"test_acc: {test_acc:.4f}"
+        )
+
+        # 5. Update results dictionary
+        results["train_loss"].append(train_loss)
+        results["train_acc"].append(train_acc)
+        results["test_loss"].append(test_loss)
+        results["test_acc"].append(test_acc)
+
+    # 6. Return the filled results at the end of the epochs
     return results
 
 if __name__ == "__main__":
