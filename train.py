@@ -13,10 +13,14 @@ def train_step(model, dataloader, loss_fn, optimizer):
     model.train()
     train_loss, train_acc = 0, 0
     for batch, (X,y) in enumerate(dataloader):
+        print(f"Running Batch: {batch}")
         X, y = X.to(device), y.to(device)
+        print("Now will make prediction...")
         y_pred = model(X)
+        print("Calculating loss...")
         loss = loss_fn(y_pred,y)
         train_loss += loss.item()
+        print(f"Loss value: {train_loss}")
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -92,12 +96,12 @@ def train(model, train_loader, test_loader, optimizer, loss_fn, epochs):
 if __name__ == "__main__":
     torch.manual_seed(RANDOM_SEED)
     extract_and_prepare_data(TRAIN_ZIP_PATH, TEST_ZIP_PATH, TRAIN_DIR, TEST_DIR)
-    print("Extracted test and train files")
+
     train_data = datasets.ImageFolder(root=TRAIN_DIR, transform=train_transform, target_transform=None)
     test_data = datasets.ImageFolder(root=TEST_DIR, transform=test_transform)
     class_names = train_data.classes
     
-    print("Creating Dataloader")
+    print("Creating Dataloader...")
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
@@ -106,7 +110,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_fn = nn.CrossEntropyLoss()
 
-    print("Training model")
+    print("Training model...")
     from timeit import default_timer as timer
     start = timer()
     results = train(model, train_loader, test_loader, optimizer, loss_fn, NUM_EPOCHS)
