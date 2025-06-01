@@ -44,18 +44,21 @@ def train(model, train_loader, test_loader, optimizer, loss_fn, epochs):
 if __name__ == "__main__":
     torch.manual_seed(RANDOM_SEED)
     extract_and_prepare_data(TRAIN_ZIP_PATH, TEST_ZIP_PATH, TRAIN_DIR, TEST_DIR)
-
+    print("Extracted test and train files")
     train_data = datasets.ImageFolder(root=TRAIN_DIR, transform=train_transform, target_transform=None)
     test_data = datasets.ImageFolder(root=TEST_DIR, transform=test_transform)
     class_names = train_data.classes
-
+    
+    print("Creating Dataloader")
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
+    print("Creating Model...")
     model = CNNClassifier().to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_fn = nn.CrossEntropyLoss()
 
+    print("Training model")
     from timeit import default_timer as timer
     start = timer()
     results = train(model, train_loader, test_loader, optimizer, loss_fn, NUM_EPOCHS)
