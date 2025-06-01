@@ -45,7 +45,7 @@ if __name__ == "__main__":
     torch.manual_seed(RANDOM_SEED)
     extract_and_prepare_data(TRAIN_ZIP_PATH, TEST_ZIP_PATH, TRAIN_DIR, TEST_DIR)
 
-    train_data = datasets.ImageFolder(root=TRAIN_DIR, transform=train_transform)
+    train_data = datasets.ImageFolder(root=TRAIN_DIR, transform=train_transform, target_transform=None)
     test_data = datasets.ImageFolder(root=TEST_DIR, transform=test_transform)
     class_names = train_data.classes
 
