@@ -7,6 +7,7 @@ from utils.data_setup import extract_and_prepare_data
 from model.cnn import CNNClassifier
 from config import *
 from tqdm.auto import tqdm
+from config import DEVICE as device
 
 def train_step(model, dataloader, loss_fn, optimizer):
     model.train()
